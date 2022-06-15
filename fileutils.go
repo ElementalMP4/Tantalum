@@ -28,30 +28,35 @@ func loadDirRecursive(filePath string) []TantalumFile {
 	return completeFileList
 }
 
+func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dirsCreated int) {
+	rightSidePath := couple.Right + strings.ReplaceAll(file.Path, couple.Left, "")
+	if file.Info.IsDir() {
+		if !fileExists(rightSidePath) {
+			os.Mkdir(rightSidePath, 0755)
+			dirsCreated++
+		}
+	} else {
+		if fileExists(rightSidePath) {
+			rightSideFile, err := os.Stat(rightSidePath)
+			check(err)
+			if file.Info.ModTime().After(rightSideFile.ModTime()) {
+				copy(file.Path, rightSidePath)
+				filesCopied++
+			}
+		} else {
+			err := copy(file.Path, rightSidePath)
+			check(err)
+			filesCopied++
+		}
+	}
+}
+
 func copyFiles(left []TantalumFile, couple TantalumCouple) (int, int) {
 	filesCopied := 0
 	dirsCreated := 0
+
 	for _, file := range left {
-		rightSidePath := couple.Right + strings.ReplaceAll(file.Path, couple.Left, "")
-		if file.Info.IsDir() {
-			if !fileExists(rightSidePath) {
-				os.Mkdir(rightSidePath, 0755)
-				dirsCreated++
-			}
-		} else {
-			if fileExists(rightSidePath) {
-				rightSideFile, err := os.Stat(rightSidePath)
-				check(err)
-				if file.Info.ModTime().After(rightSideFile.ModTime()) {
-					copy(file.Path, rightSidePath)
-					filesCopied++
-				}
-			} else {
-				err := copy(file.Path, rightSidePath)
-				filesCopied++
-				check(err)
-			}
-		}
+		copyOrUpdate(couple, file, filesCopied, dirsCreated)
 	}
 	return filesCopied, dirsCreated
 }

@@ -7,7 +7,6 @@ import (
 	"log"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 func print(text ...string) {
@@ -47,20 +46,13 @@ func mirror(couples []TantalumCouple) {
 		fileCollections = append(fileCollections, collection)
 	}
 
-	var mirrorGroup sync.WaitGroup
-	var i int = 0
-
 	for _, collection := range fileCollections {
-		mirrorGroup.Add(i)
-		go startMirrorProcess(&mirrorGroup, collection)
-		i++
+		startMirrorProcess(collection)
 	}
-	mirrorGroup.Wait()
 	fmt.Println("Process Completed")
 }
 
-func startMirrorProcess(workerGroup *sync.WaitGroup, collection TantalumFileCollection) {
-	defer workerGroup.Done()
+func startMirrorProcess(collection TantalumFileCollection) {
 	fmt.Println("Mirroring couple", collection.Couple.Left, ">", collection.Couple.Right)
 	files, dirs := copyFiles(collection.Files, collection.Couple)
 	fmt.Println("Copied", strconv.Itoa(files), "files and created", strconv.Itoa(dirs), "directories")
