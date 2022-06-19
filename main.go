@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func print(text ...string) {
@@ -17,7 +20,7 @@ func print(text ...string) {
 
 func check(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 
@@ -49,7 +52,10 @@ func mirror(couples []TantalumCouple) {
 	for _, collection := range fileCollections {
 		startMirrorProcess(collection)
 	}
-	fmt.Println("Process Completed")
+	fmt.Println("Process Completed!")
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	<-sc
 }
 
 func startMirrorProcess(collection TantalumFileCollection) {

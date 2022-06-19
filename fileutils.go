@@ -28,7 +28,7 @@ func loadDirRecursive(filePath string) []TantalumFile {
 	return completeFileList
 }
 
-func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dirsCreated int) {
+func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dirsCreated int) (int, int) {
 	rightSidePath := couple.Right + strings.ReplaceAll(file.Path, couple.Left, "")
 	if file.Info.IsDir() {
 		if !fileExists(rightSidePath) {
@@ -49,6 +49,7 @@ func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dir
 			filesCopied++
 		}
 	}
+	return filesCopied, dirsCreated
 }
 
 func copyFiles(left []TantalumFile, couple TantalumCouple) (int, int) {
@@ -56,7 +57,7 @@ func copyFiles(left []TantalumFile, couple TantalumCouple) (int, int) {
 	dirsCreated := 0
 
 	for _, file := range left {
-		copyOrUpdate(couple, file, filesCopied, dirsCreated)
+		filesCopied, dirsCreated = copyOrUpdate(couple, file, filesCopied, dirsCreated)
 	}
 	return filesCopied, dirsCreated
 }
