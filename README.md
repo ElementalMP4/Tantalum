@@ -11,7 +11,8 @@ Here is an example config file:
     "couples": [
         {
             "left": "C:\\Users\\ElementalMP4\\Documents",
-            "right": "\\\\elementalmp4-backup-server\\Documents"
+            "right": "\\\\elementalmp4-backup-server\\Documents",
+            "forceUpdate": false
         }
     ],
     "output": true
@@ -19,6 +20,8 @@ Here is an example config file:
 ```
 
 This config will copy all files and directories from `left` and duplicate them on `right`, only copying the latest copy of each file.
+
+To copy every file regardless of modified time, set `forceUpdate` to true
 
 It is possible to have as many couples as you wish, and you can copy from and to network shares, so long as you have already authenticated.
 
