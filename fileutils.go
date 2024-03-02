@@ -68,7 +68,7 @@ func fileExists(path string) bool {
 }
 
 func copy(src, dst string) error {
-	print("Copying from", src, "to", dst)
+	info("Copying from", magenta(src), "to", cyan(dst))
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {
 		return err
@@ -90,6 +90,6 @@ func copy(src, dst string) error {
 	}
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
-	defer print("Copied", strconv.FormatInt(nBytes, 10), "bytes from", src, "to", dst)
+	defer ok("Copied", red(strconv.FormatInt(nBytes, 10)), "bytes from", magenta(src), "to", cyan(dst))
 	return err
 }

@@ -2,24 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"os"
-	"os/signal"
 	"strconv"
-	"strings"
-	"syscall"
 )
-
-func print(text ...string) {
-	if outputEnabled {
-		fmt.Println(strings.Join(text, " "))
-	}
-}
 
 func check(err error) {
 	if err != nil {
-		log.Println(err)
+		fail(err.Error())
 	}
 }
 
@@ -31,16 +20,14 @@ func main() {
 	config := TantalumConfig{}
 	err = json.Unmarshal([]byte(file), &config)
 	check(err)
-
 	outputEnabled = config.Output
-
 	mirror(config.Couples)
 }
 
 func mirror(couples []TantalumCouple) {
 	fileCollections := []TantalumFileCollection{}
 	for _, couple := range couples {
-		fmt.Println("Loading couple", couple.Left, ">", couple.Right)
+		info("Loading differences", magenta(couple.Left), ">", cyan(couple.Right))
 		leftComplete := loadDirRecursive(couple.Left)
 		collection := TantalumFileCollection{}
 		collection.Couple = couple
@@ -51,14 +38,11 @@ func mirror(couples []TantalumCouple) {
 	for _, collection := range fileCollections {
 		startMirrorProcess(collection)
 	}
-	fmt.Println("Process Completed!")
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-sc
+	ok("Process Completed!")
 }
 
 func startMirrorProcess(collection TantalumFileCollection) {
-	fmt.Println("Mirroring couple", collection.Couple.Left, ">", collection.Couple.Right)
+	info("Mirroring couple", magenta(collection.Couple.Left), ">", cyan(collection.Couple.Right))
 	files, dirs := copyFiles(collection.Files, collection.Couple)
-	fmt.Println("Copied", strconv.Itoa(files), "files and created", strconv.Itoa(dirs), "directories")
+	ok("Copied", red(strconv.Itoa(files)), "files and created", red(strconv.Itoa(dirs)), "directories")
 }
