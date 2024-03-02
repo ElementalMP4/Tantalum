@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -27,7 +26,7 @@ func check(err error) {
 var outputEnabled bool
 
 func main() {
-	file, err := ioutil.ReadFile("config.json")
+	file, err := os.ReadFile("config.json")
 	check(err)
 	config := TantalumConfig{}
 	err = json.Unmarshal([]byte(file), &config)
