@@ -24,7 +24,7 @@ func loadDirRecursive(filePath string) []TantalumFile {
 		return nil
 	})
 
-	check(err)
+	check(err, false)
 
 	return completeFileList
 }
@@ -39,14 +39,14 @@ func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dir
 	} else {
 		if fileExists(rightSidePath) {
 			rightSideFile, err := os.Stat(rightSidePath)
-			check(err)
+			check(err, false)
 			if file.Info.ModTime().After(rightSideFile.ModTime()) || couple.ForceUpdate {
 				copy(file, rightSidePath)
 				filesCopied++
 			}
 		} else {
 			err := copy(file, rightSidePath)
-			check(err)
+			check(err, false)
 			filesCopied++
 		}
 	}

@@ -6,9 +6,12 @@ import (
 	"strconv"
 )
 
-func check(err error) {
+func check(err error, exit bool) {
 	if err != nil {
 		fail(err.Error())
+		if exit {
+			os.Exit(1)
+		}
 	}
 }
 
@@ -16,10 +19,10 @@ var outputEnabled bool
 
 func main() {
 	file, err := os.ReadFile("config.json")
-	check(err)
+	check(err, true)
 	config := TantalumConfig{}
 	err = json.Unmarshal([]byte(file), &config)
-	check(err)
+	check(err, true)
 	outputEnabled = config.Output
 	mirror(config.Couples)
 }
