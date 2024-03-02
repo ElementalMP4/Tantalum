@@ -40,7 +40,7 @@ func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dir
 		if fileExists(rightSidePath) {
 			rightSideFile, err := os.Stat(rightSidePath)
 			check(err)
-			if file.Info.ModTime().After(rightSideFile.ModTime()) {
+			if file.Info.ModTime().After(rightSideFile.ModTime()) || couple.ForceUpdate {
 				copy(file, rightSidePath)
 				filesCopied++
 			}

@@ -13,8 +13,9 @@ type TantalumFile struct {
 }
 
 type TantalumCouple struct {
-	Left  string
-	Right string
+	Left        string
+	Right       string
+	ForceUpdate bool
 }
 
 type TantalumConfig struct {
