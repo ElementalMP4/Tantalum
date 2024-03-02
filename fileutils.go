@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func loadDirRecursive(filePath string) []TantalumFile {
@@ -32,7 +33,7 @@ func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dir
 	rightSidePath := couple.Right + strings.ReplaceAll(file.Path, couple.Left, "")
 	if file.Info.IsDir() {
 		if !fileExists(rightSidePath) {
-			os.Mkdir(rightSidePath, 0755)
+			os.Mkdir(rightSidePath, file.Info.Mode().Perm())
 			dirsCreated++
 		}
 	} else {
@@ -40,11 +41,11 @@ func copyOrUpdate(couple TantalumCouple, file TantalumFile, filesCopied int, dir
 			rightSideFile, err := os.Stat(rightSidePath)
 			check(err)
 			if file.Info.ModTime().After(rightSideFile.ModTime()) {
-				copy(file.Path, rightSidePath)
+				copy(file, rightSidePath)
 				filesCopied++
 			}
 		} else {
-			err := copy(file.Path, rightSidePath)
+			err := copy(file, rightSidePath)
 			check(err)
 			filesCopied++
 		}
@@ -67,29 +68,29 @@ func fileExists(path string) bool {
 	return err == nil
 }
 
-func copy(src, dst string) error {
-	info("Copying from", magenta(src), "to", cyan(dst))
-	sourceFileStat, err := os.Stat(src)
+func copy(srcFile TantalumFile, dst string) error {
+	info("Copying from", magenta(srcFile.Path), "to", cyan(dst))
+	sourceFileStat, err := os.Stat(srcFile.Path)
 	if err != nil {
 		return err
 	}
 
 	if !sourceFileStat.Mode().IsRegular() {
-		return fmt.Errorf("%s is not a regular file", src)
+		return fmt.Errorf("%s is not a regular file", srcFile.Path)
 	}
 
-	source, err := os.Open(src)
+	source, err := os.Open(srcFile.Path)
 	if err != nil {
 		return err
 	}
 	defer source.Close()
 
-	destination, err := os.Create(dst)
+	destination, err := os.OpenFile(dst, syscall.O_RDWR|syscall.O_CREAT|syscall.O_TRUNC, srcFile.Info.Mode())
 	if err != nil {
 		return err
 	}
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
-	defer ok("Copied", red(strconv.FormatInt(nBytes, 10)), "bytes from", magenta(src), "to", cyan(dst))
+	defer ok("Copied", red(strconv.FormatInt(nBytes, 10)), "bytes from", magenta(srcFile.Path), "to", cyan(dst))
 	return err
 }
